@@ -23,24 +23,24 @@ export class PartyController {
     }
 
     @Post()
-    public async CreateParty(@Body() request: CreateParty): Promise<GenResSingle<IParty>> {
-        return GenResFactory.successfulOne(await this.partyService.createParty(request));
+    public async CreateParty(@Body() request: CreateParty): Promise<IParty> {
+        return await this.partyService.createParty(request);
     }
 
     @Post("/join")
-    public async JoinParty(@Body() request: JoinParty): Promise<GenRes<Session>> {
+    public async JoinParty(@Body() request: JoinParty): Promise<Session> {
         return await this.partyService.joinParty(request);
     }
 
     @Post("/refresh")
-    public async RefreshPartyToken(@Req() request: Request): Promise<GenRes<Session>> {
+    public async RefreshPartyToken(@Req() request: Request): Promise<Session> {
         const token = request.headers["party-token"] as string;
         return await this.guestService.refreshToken(token);
     }
 
     @Get("/current")
     @UseGuards(PartyAuthGuard)
-    public async GetParty(@Req() request: Request): Promise<GenRes<IParty>> {
+    public async GetParty(@Req() request: Request): Promise<IParty> {
         const token = request.headers["party-token"] as string;
         return await this.guestService.getCurrentParty(token);
     }

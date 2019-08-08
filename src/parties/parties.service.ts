@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { CreateParty, GenResSingle, IParty, GenResFactory, JoinParty, IGuest, GenRes } from "you-party-shared";
 import { Party } from "src/entities/party.entity";
 import { Random } from "src/utilities/random";
@@ -41,7 +41,7 @@ export class PartyService {
         return party;
     }
 
-    public async joinParty(request: JoinParty): Promise<GenRes<Session>> {
+    public async joinParty(request: JoinParty): Promise<Session> {
 
         let party: undefined | Party = undefined;
 
@@ -54,11 +54,11 @@ export class PartyService {
                 }
             })
         } else {
-            return GenResFactory.error("Missing parameters: id or key");
+            throw new BadRequestException("Missing parameters: id or key");
         }
 
         if (!party) {
-            return GenResFactory.error("Failed to find Party");
+            throw new NotFoundException("Failed to find Party");
         } 
 
         const guest = new Guest();
@@ -82,6 +82,6 @@ export class PartyService {
 
         await session.save();
 
-        return GenResFactory.successfulOne(session);
+        return session;
     }
 }

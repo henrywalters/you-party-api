@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { GenRes, GenResFactory, IParty } from "you-party-shared";
 import { Session } from "src/entities/session.entity";
 
 @Injectable()
 export class GuestService {
-    public async refreshToken(token: string): Promise<GenRes<Session>> {
+    public async refreshToken(token: string): Promise<Session> {
         const session = await Session.findOne({
             where: {
                 token,
@@ -12,19 +12,19 @@ export class GuestService {
         });
 
         if (!session) {
-            return GenResFactory.error("No session found");
+            throw new NotFoundException("No session found");
         }
 
         const successfulRefresh = await session.refresh();
 
         if (successfulRefresh) {
-            return GenResFactory.successfulOne(session);
+            return session;
         } else {
-            return GenResFactory.error("Session Expired");
+            throw new UnauthorizedException("Session Expired");
         }
     }
 
-    public async getCurrentParty(token: string): Promise<GenRes<IParty>> {
+    public async getCurrentParty(token: string): Promise<IParty> {
         const session = await Session.findOne({
             where: {
                 token,
@@ -32,9 +32,9 @@ export class GuestService {
         });
 
         if (!session) {
-            return GenResFactory.error("Not in party");
+            throw new UnauthorizedException("Not in party");
         }
 
-        return GenResFactory.successfulOne(session.guest.party);
+        return session.guest.party;
     }
 }
